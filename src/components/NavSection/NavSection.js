@@ -5,26 +5,22 @@ import Banner from "images/banner.svg";
 import Header from "images/header.svg";
 import PostcodeSearch from "../PostcodeSearch/index"
 import LocationFilter from "components/LocationFilter";
+import { useScrollPosition } from "../../hooks/useScrollPosition";
 
 const NavSection = () => {
-  const [prevScrollPos, setPrevScrollPos] = useState(window.pageYOffset);
-  const [visible, setVisible] = useState(true);
+  const [sticky, setSticky] = useState(false)
 
-  const handleScroll = () => {
-    const currentScrollPos = window.pageYOffset;
-    const visible = prevScrollPos > currentScrollPos;
-  
-    setPrevScrollPos(currentScrollPos);
-    setVisible(visible);
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-  })
+  useScrollPosition(
+    ({ prevPos, currPos }) => {
+      const isShow = currPos.y > prevPos.y
+      if (isShow !== sticky) setSticky(isShow)
+    },
+    [sticky]
+  )
 
   return (
     <NavSectionContainer>
-      <img className={!visible ? "header header--hidden" : "header"} src={Header} alt={"FREE SCHOOL MEALS"} />
+      <img className={sticky ? "header header--sticky" : "header"} src={Header} alt={"FREE SCHOOL MEALS"} />
       <img className="banner" src={Banner} alt={"FREE SCHOOL MEALS"} />
       <div className="filters">
         <PostcodeSearch />
@@ -43,17 +39,18 @@ const NavSectionContainer = styled.div`
   }
   .header{
     display: block;
+    position: "sticky";
+    transition: "transform 400ms ease-in";
+    transform: "translateY(0)";
     width: 100%;
     padding: 10px;
     top: 0;
-    transition: top 0.6s;
     @media screen and (min-width: ${BREAKPOINTS.md}) {
       display: none;
     }
   }
-  .header--hidden{
-    top: -50px;
-    /* display: none; */
+  .header--sticky{
+    transform: "translateY(100%)";
   }
   .banner {
     display: none;
