@@ -5,30 +5,46 @@ import Banner from "images/banner.svg";
 import Header from "images/header.svg";
 import PostcodeSearch from "../PostcodeSearch/index"
 import LocationFilter from "components/LocationFilter";
-import { useScrollPosition } from "../../hooks/useScrollPosition";
 
 const NavSection = () => {
-  const [sticky, setSticky] = useState(false)
+  const [show, setShow] = useState(true);
+  const [scrollPos, setScrollPos] = useState(0);
 
-  useScrollPosition(
-    ({ prevPos, currPos }) => {
-      const isShow = currPos.y > prevPos.y
-      if (isShow !== sticky) setSticky(isShow)
-    },
-    [sticky]
-  )
+  const handleScroll = () => {
+      setScrollPos(document.body.getBoundingClientRect().top)
+      setShow(document.body.getBoundingClientRect().top > scrollPos)
+  }
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+  })
 
   return (
-    <NavSectionContainer>
-      <img className={sticky ? "header header--sticky" : "header"} src={Header} alt={"FREE SCHOOL MEALS"} />
-      <img className="banner" src={Banner} alt={"FREE SCHOOL MEALS"} />
-      <div className="filters">
-        <PostcodeSearch />
-        <LocationFilter />
-      </div>
-    </NavSectionContainer>
+    <Transition>
+      <NavSectionContainer className={show ? "active" : "hidden"}>
+        <img className="header" src={Header} alt={"FREE SCHOOL MEALS"} />
+        <img className="banner" src={Banner} alt={"FREE SCHOOL MEALS"} />
+        <div className="filters">
+          <PostcodeSearch />
+          <LocationFilter />
+        </div>
+      </NavSectionContainer>
+    </Transition>
   );
 };
+
+const Transition = styled.div`
+  .active {
+    visibility: visible;
+    transition: all 200ms ease-in;
+  }
+  .hidden {
+    top: -50px;
+    visibility: hidden;
+    transition: all 200ms ease-out;
+    transform: translate(0, -100%);
+  }
+`;
 
 const NavSectionContainer = styled.div`
   width: 100%;
@@ -48,9 +64,6 @@ const NavSectionContainer = styled.div`
     @media screen and (min-width: ${BREAKPOINTS.md}) {
       display: none;
     }
-  }
-  .header--sticky{
-    transform: "translateY(100%)";
   }
   .banner {
     display: none;
